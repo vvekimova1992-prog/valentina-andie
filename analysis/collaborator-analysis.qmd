@@ -64,6 +64,35 @@ ggplot(data = lobster_traps, aes(x = traps)) +
 
 #### line graph of the number of total lobster commercial traps observed (y-axis) by year (x-axis) 
 ```{r}
-lobsters_traps_summarize
+# Group the data by SITE AND YEAR
+lobsters_traps_summarize <- lobster_traps %>% group_by(site, year) %>% 
+  mutate(total_traps = sum(traps, na.rm = TRUE)) # Calculate the total number of lobster commercial traps observed
+
+#create the visual
+otraps <- ggplot(data = lobsters_traps_summarize, aes(x = year, y = total_traps)) +
+    geom_point(aes(color = site)) +
+    geom_line(aes(color = site))
+
+ggsave("observed_traps.png", otraps, path = "../figs")
+```
+
+#### bar graph that shows the amount of high and low fishing pressure of lobster commercial traps at each SITE from 2019-2021
+```{r}
+# filter and summarize
+lobster_traps_fp <- lobster_traps %>% 
+    filter(year %in% c(2019, 2020, 2021)) %>%
+    mutate(fishing_press = if_else(traps >= 8, true = "high", false = "low")) %>%
+    group_by(site, fishing_press) %>%
+    summarize(count = n()) %>%
+    drop_na()
+
+# dodged bar plot
+pressplot <- ggplot(data = lobster_traps_fp, aes(x = site, y = count, fill = fishing_press)) +
+    geom_col(position = "dodge") + theme_classic()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + ylab("number of observed transects")
+  
+
+pressplot
+ggsave("fishing_pressure.png", pressplot, path = "../figs")
 ```
 
