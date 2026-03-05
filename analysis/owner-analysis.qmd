@@ -53,3 +53,90 @@ max_lobster <- lobster_abundance %>%
 
 ## Exercise: Data Visualization
 
+### To upload libraries for visualization
+```{r}
+library(readr)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+### Multi-panel plot of lobster carapace length
+```{r}
+ggplot(data = lobster_abundance, aes(x = SIZE_MM)) +
+  geom_histogram(bins = 30) +
+  facet_wrap(~SITE)
+```
+### Graph of the number of total lobsters observed
+```{r}
+# Create a new dataset subset called lobsters_summarize
+
+lobsters_summarize <- lobster_abundance %>% 
+  group_by(SITE, YEAR) %>% 
+  summarize(COUNT = n())
+
+# Create a line graph
+ggplot(data = lobsters_summarize, aes(x = YEAR, y = COUNT)) +
+  geom_line(aes(color = SITE)) 
+
+ggplot(data = lobsters_summarize, aes(x = YEAR, y = COUNT)) +
+  geom_point(aes(color = SITE)) +
+  geom_line(aes(color = SITE)) 
+```
+### Create a bar graph that shows the amount of small and large sized carapace lobsters at each SITE
+```{r}
+# Create a new dataset subset called lobsters_size_lrg
+
+lobster_size_lrg <- lobster_abundance %>%
+    filter(YEAR %in% c(2019, 2020, 2021)) %>%
+    mutate(SIZE_BIN = if_else(SIZE_MM <= 70, true = "small", false = "large")) %>%
+    group_by(SITE, SIZE_BIN) %>%
+    summarize(COUNT = n()) %>%
+    drop_na()
+
+# bar plot
+ggplot(data = lobster_size_lrg, aes(x = SITE, y = COUNT, fill = SIZE_BIN)) +
+    geom_col()
+
+# dodged bar plot
+ggplot(data = lobster_size_lrg, aes(x = SITE, y = COUNT, fill = SIZE_BIN)) +
+    geom_col(position = "dodge")
+
+```
+### Creating a beautiful graph
+```{r}
+p_hist_site <- lobster_abundance %>%
+  drop_na(SIZE_MM) %>%
+  ggplot(aes(x = SIZE_MM)) +
+  geom_histogram(bins = 30, alpha = 0.8, color = "white") +
+  facet_wrap(~ SITE, ncol = 3) +
+  labs(
+    title = "California spiny lobster carapace length by site",
+    subtitle = "Mainland Santa Barbara Channel LTER lobster monitoring",
+    x = "Carapace length (mm)",
+    y = "Number of lobsters"
+  ) +
+  scale_x_continuous(breaks = seq(0, 200, by = 20)) +
+  theme_light() +
+  theme(
+    plot.title = element_text(face = "bold"),
+    strip.text = element_text(face = "bold"),
+    panel.grid.minor = element_blank(),
+    axis.title = element_text(face = "bold")
+  )
+
+p_hist_site
+```
+### Saving graph
+```{r}
+
+ggsave(
+  filename = here("figs", "hist_carapace_length_by_site.png"),
+  plot = p_hist_site,
+  width = 10,
+  height = 7,
+  dpi = 300
+)
+
+```
+
