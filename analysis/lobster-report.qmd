@@ -79,4 +79,4 @@ p_hist_site <- lobster_abundance %>%
 p_hist_site
 ```
 
-## Collaborator analysis and visulaization
+## Collaborator analysis and visulaization of the dataset
