@@ -13,10 +13,57 @@ library(dplyr)
 library(ggplot2)
 library(tidyr)
 library(here)
+library(janitor)
 ```
 
 #### bring in the data!
 ```{r}
-lobster_traps <- read_csv("../data/Lobster_Trap_Counts_All_Years_20210519.csv")
+lobster_traps_raw <- read_csv("../data/Lobster_Trap_Counts_All_Years_20210519.csv")
+# NOTE: Fishing season is a char col, will need to separate into szn_start and szn_end by "-"
+## also segment start and segment end are both chr because they are in DDM:  divide the minutes by 
+## 60 and add the result to the degrees
+
+## NOTE2: Authors used "-99999" to denote an NA value, this will need to be changed
+
+```
+
+#### Clean the data
+```{r}
+
+lobster_traps <- lobster_traps_raw %>% clean_names() %>% #clean names up
+  mutate(traps = na_if(traps, -99999)) %>% select(-notes) # fix NA values, remove notes col
+head(lobster_traps)
+
+```
+
+#### Remove Naples Reef (NAPL)
+```{r}
+traps_noNAPL <- lobster_traps %>% filter(site != "NAPL")
+unique(lobster_traps_noNAPL$site)
+```
+
+#### Filter for Carpinteria Reef and traps > 20
+```{r}
+traps_CARP20 <- lobster_traps %>% filter(site == "CARP" & traps > 20)
+```
+
+#### Find the maximum number of commercial trap floats group by SITE and MONTH.
+```{r}
+traps_max <- lobster_traps %>% group_by(site, month) %>% filter(traps == max(traps, na.rm=TRUE))
+```
+
+## Exercise: Data Visualization
+
+#### traps faceted by Year
+```{r}
+ggplot(data = lobster_traps, aes(x = traps)) +
+    geom_histogram() +
+    facet_wrap( ~ year)
+    
+```
+
+#### line graph of the number of total lobster commercial traps observed (y-axis) by year (x-axis) 
+```{r}
+lobsters_traps_summarize
 ```
 
