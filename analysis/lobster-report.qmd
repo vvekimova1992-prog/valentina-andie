@@ -3,23 +3,57 @@ title: "Lobster Report"
 format: html
 ---
 
-## Quarto
+## Summary: Data on abundance, size and fishing pressure of California spiny lobster are collected along the mainland coast of the Santa Barbara Channel. Sampling began in 2012 and is ongoing {citation}.
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
 
-## Running Code
+## Owner analysis and visualizations
+## Exercise: Explore, Clean, and Wrangle Data
 
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
-```{r}
-1 + 1
-```
-
-You can add options to executable code like this 
+### Loading libraries
 
 ```{r}
-#| echo: false
-2 * 2
+#| warning: false
+
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(here)
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+### Reading the data
+
+```{r}
+lobster_abundance <- read_csv(here("data/Lobster_Abundance_All_Years_20220829.csv"))
+```
+
+```{r}
+head(lobster_abundance)
+```
+```{r}
+colnames(lobster_abundance)
+```
+
+
+### Convert missing values using mutate() and na_if()
+```{r}
+lobster_abundance <- lobster_abundance %>% 
+    mutate(SIZE_MM = na_if(SIZE_MM, -99999))
+```
+
+### filter() practice
+```{r}
+not_napl <- lobster_abundance %>% 
+  filter(SITE != "NAPL")
+
+aque_70mm <- lobster_abundance %>% 
+  filter(SITE == "AQUE" & SIZE_MM >= 70)
+
+max_lobster <- lobster_abundance %>% 
+  group_by(SITE, MONTH) %>% 
+  summarize(MAX_LENGTH = max(SIZE_MM, na.rm = TRUE))
+```
+
+### Visualization
+![Lobster carapace length distribution by site](../figs/hist_carapace_length_by_site.png){fig-cap="Distribution of lobster carapace length across monitoring sites." width=80%}
+
